@@ -22,7 +22,7 @@ async function main() {
 
   // Create MCP server
   const server = new McpServer({
-    name: "mcp-sonarqube",
+    name: "@godrix/mcp-sonarqube",
     version: "1.0.0",
   });
 

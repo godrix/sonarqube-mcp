@@ -45,5 +45,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Token-based authentication with base64 encoding
 - Environment variable configuration for sensitive data
 
-[1.0.0]: https://github.com/caggodri/mcp-sonarqube/releases/tag/v1.0.0
+[1.0.0]: https://github.com/godrix/sonarqube-mcp/releases/tag/v1.0.0
 

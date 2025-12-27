@@ -1,6 +1,6 @@
 # SonarQube MCP Server
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=Sonarqube&config=eyJjb21tYW5kIjoibnB4IC15IHNvbmFycXViZS1tY3AifQ%3D%3D)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=Sonarqube&config=eyJjb21tYW5kIjoibnB4IC15IEBnb2RyaXgvbWNwLXNvbmFycXViZSJ9)
 
 A Model Context Protocol (MCP) server for analyzing code quality with SonarQube. Enables AI assistants to interact with SonarQube for code analysis, quality metrics, security hotspots, and more.
 
@@ -60,7 +60,7 @@ Add to your MCP client configuration (e.g., Claude Desktop):
   "mcpServers": {
     "sonarqube": {
       "command": "node",
-      "args": ["/absolute/path/to/mcp-sonarqube/build/server.js"],
+      "args": ["/absolute/path/build/server.js"],
       "env": {
         "SONARQUBE_URL": "https://sonarcloud.io",
         "SONARQUBE_TOKEN": "your_token_here"
@@ -220,7 +220,7 @@ This opens the MCP Inspector for interactive testing.
 ### Project Structure
 
 ```
-mcp-sonarqube/
+@godrix/mcp-sonarqube/
 ├── src/
 │   ├── server.ts                          # Main server
 │   ├── services/
