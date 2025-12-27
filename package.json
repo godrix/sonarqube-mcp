@@ -1,0 +1,31 @@
+{
+  "name": "sonarqube-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server for seamless SonarQube integration. Enables AI-driven code quality analysis and interaction with SonarQube metrics and insights.",
+  "type": "module",
+  "main": "build/server.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm run build && export DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector node /Users/caggodri/Documents/Repos/mcp-sonarqube/build/server.js",
+    "start": "node build/server.js"
+  },
+  "keywords": [
+    "mcp",
+    "sonarqube",
+    "code-quality",
+    "model-context-protocol"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "zod": "^3.24.2",
+    "dotenv": "^16.5.0",
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/node": "^22.14.0"
+  }
+}
+
