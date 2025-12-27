@@ -15,8 +15,12 @@
     "code-quality",
     "model-context-protocol"
   ],
-  "author": "",
+  "author": "Godrix",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/godrix/sonarqube-mcp.git"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.9.0",
     "zod": "^3.24.2",
