@@ -21,6 +21,9 @@
     "type": "git",
     "url": "https://github.com/godrix/sonarqube-mcp.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.9.0",
     "zod": "^3.24.2",
