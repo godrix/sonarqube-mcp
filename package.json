@@ -1,9 +1,12 @@
 {
   "name": "@godrix/mcp-sonarqube",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP Server for seamless SonarQube integration. Enables AI-driven code quality analysis and interaction with SonarQube metrics and insights.",
   "type": "module",
   "main": "build/server.js",
+  "bin": {
+    "mcp-sonarqube": "build/server.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "npm run build && export DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector node /build/server.js",
