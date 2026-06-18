@@ -1,6 +1,6 @@
 # SonarQube MCP Server
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=Sonarqube&config=eyJlbnYiOnsiU09OQVJRVUJFX1VSTCI6Imh0dHBzOi8vc29uYXJjbG91ZC5pbyIsIlNPTkFSUVVCRV9UT0tFTiI6InlvdXJfdG9rZW5faGVyZSIsIlNPTkFSUVVCRV9SRUFEX09OTFkiOiJmYWxzZSJ9LCJjb21tYW5kIjoibnB4IC15IEBnb2RyaXgvbWNwLXNvbmFycXViZSJ9)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=Sonarqube&config=eyJlbnYiOnsiU09OQVJRVUJFX1VSTCI6Imh0dHBzOi8vc29uYXJjbG91ZC5pbyIsIlNPTkFSUVVCRV9UT0tFTiI6InlvdXJfdG9rZW5faGVyZSIsIlNPTkFSUVVCRV9SRUFEX09OTFkiOiJmYWxzZSJ9LCJjb21tYW5kIjoibnB4IC15IEBnb2RyaXgvbWNwL3NvbmFycXViZSJ9)
 
 A Model Context Protocol (MCP) server for SonarQube integration. Enables AI assistants to analyze code quality, explore the full SonarQube Web API, and interact with metrics, issues, hotspots, and more.
 
@@ -231,7 +231,7 @@ npm run dev
 ### Project Structure
 
 ```
-@godrix/mcp-sonarqube/
+@godrix/mcp/sonarqube/
 ├── src/
 │   ├── server.ts                              # Main server
 │   ├── config/
