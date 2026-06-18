@@ -1,20 +1,20 @@
 # SonarQube MCP Server
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=Sonarqube&config=eyJlbnYiOnsiU09OQVJRVUJFX1VSTCI6Imh0dHBzOi8vc29uYXJjbG91ZC5pbyIsIlNPTkFSUVVCRV9UT0tFTiI6InlvdXJfdG9rZW5faGVyZSJ9LCJjb21tYW5kIjoibnB4IC15IEBnb2RyaXgvbWNwLXNvbmFycXViZSJ9)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=Sonarqube&config=eyJlbnYiOnsiU09OQVJRVUJFX1VSTCI6Imh0dHBzOi8vc29uYXJjbG91ZC5pbyIsIlNPTkFSUVVCRV9UT0tFTiI6InlvdXJfdG9rZW5faGVyZSIsIlNPTkFSUVVCRV9SRUFEX09OTFkiOiJmYWxzZSJ9LCJjb21tYW5kIjoibnB4IC15IEBnb2RyaXgvbWNwLXNvbmFycXViZSJ9)
 
-A Model Context Protocol (MCP) server for analyzing code quality with SonarQube. Enables AI assistants to interact with SonarQube for code analysis, quality metrics, security hotspots, and more.
+A Model Context Protocol (MCP) server for SonarQube integration. Enables AI assistants to analyze code quality, explore the full SonarQube Web API, and interact with metrics, issues, hotspots, and more.
 
 ## Features
 
-- **12 Analysis Tools** - Complete set of read-only tools for code analysis
-- **Smart Project Search** - Find projects by repository name
-- **Security Analysis** - Security hotspots and vulnerability detection
-- **Code Quality Metrics** - Coverage, bugs, code smells, duplication
-- **Quality Gates** - Check if code meets quality standards
-- **Branch Analysis** - Compare quality across branches
-- **Source Code View** - Inspect code with line numbers
-- **Rule Explanations** - Understand why issues are flagged
-- **3 AI Prompts** - Intelligent analysis templates
+- **15 MCP Tools** — 12 high-level analysis tools + 3 generic Web API tools
+- **Full API Coverage** — Discover and call any endpoint exposed by your SonarQube instance
+- **Read-only Mode** — Optional `SONARQUBE_READ_ONLY` flag to block write operations
+- **Smart Project Search** — Find projects by repository name
+- **Security Analysis** — Security hotspots and vulnerability detection
+- **Code Quality Metrics** — Coverage, bugs, code smells, duplication
+- **Quality Gates** — Check if code meets quality standards
+- **Branch Analysis** — Compare quality across branches
+- **3 AI Prompts** — Intelligent analysis templates
 
 ## Prerequisites
 
@@ -32,12 +32,19 @@ npm install
 
 ### 2. Configure Environment
 
-Create `.env` file:
+Create `.env` file (see `.env.example`):
 
 ```env
 SONARQUBE_URL=https://sonarcloud.io
 SONARQUBE_TOKEN=your_token_here
+SONARQUBE_READ_ONLY=false
 ```
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SONARQUBE_URL` | No | `https://sonarcloud.io` | SonarQube or SonarCloud base URL |
+| `SONARQUBE_TOKEN` | **Yes** | — | Authentication token |
+| `SONARQUBE_READ_ONLY` | No | `false` | When `true`, blocks write operations via `call-sonar-api` |
 
 **Get your token:**
 - **SonarCloud**: https://sonarcloud.io → Account → Security → Generate Tokens
@@ -51,7 +58,7 @@ npm run build
 
 ### 4. Configure MCP Client
 
-Add to your MCP client configuration (e.g., Claude Desktop):
+Add to your MCP client configuration (e.g., Claude Desktop or Cursor):
 
 **macOS/Linux** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 
@@ -63,16 +70,29 @@ Add to your MCP client configuration (e.g., Claude Desktop):
       "args": ["/absolute/path/build/server.js"],
       "env": {
         "SONARQUBE_URL": "https://sonarcloud.io",
-        "SONARQUBE_TOKEN": "your_token_here"
+        "SONARQUBE_TOKEN": "your_token_here",
+        "SONARQUBE_READ_ONLY": "false"
       }
     }
   }
 }
 ```
 
+**Read-only example** (safe for exploration, no mutations):
+
+```json
+{
+  "env": {
+    "SONARQUBE_URL": "https://sonarcloud.io",
+    "SONARQUBE_TOKEN": "your_token_here",
+    "SONARQUBE_READ_ONLY": "true"
+  }
+}
+```
+
 ### 5. Restart MCP Client
 
-Restart Claude Desktop (or your MCP client) to load the server.
+Restart your MCP client to load the server.
 
 ## Authentication
 
@@ -88,123 +108,116 @@ Base64:      c3F1X2FiYzEyMy4uLjo=
 Header:      Authorization: Basic c3F1X2FiYzEyMy4uLjo=
 ```
 
-This conversion happens automatically - just provide your token in the `.env` file.
-
-## Finding Project Keys
-
-SonarQube uses `projectKey` to identify projects. Format is usually:
-
-```
-organization_repository-name
-```
-
-### Method 1: Search by Repository Name (Recommended)
-
-```
-"Find projects named 'my-repo'"
-"Analyze project 'backend-api'"
-```
-
-The AI will automatically:
-1. Search using `get-projects` with query
-2. Find the correct projectKey
-3. Use it for analysis
-
-### Method 2: List All Projects
-
-```
-"List all SonarQube projects"
-```
-
-Then use the projectKey from results.
-
-### Method 3: Check Local Files
-
-Check these files in your repository:
-- `sonar-project.properties` → `sonar.projectKey=...`
-- `package.json` → `sonarqube.projectKey`
-- `pom.xml` → `<sonar.projectKey>...</sonar.projectKey>`
-- `build.gradle` → `property "sonar.projectKey", "..."`
+This conversion happens automatically — just provide your token in the environment.
 
 ## Available Tools
 
-### Projects & Overview (3)
-1. **get-projects** - List projects (supports search query)
-2. **get-project-details** - Get project information
-3. **get-project-branches** - List analyzed branches
+### Analysis Tools (12) — always read-only
 
-### Issues & Security (3)
-4. **get-issues** - Find bugs, vulnerabilities, code smells
-5. **get-hotspots** - Security hotspots requiring review
-6. **get-hotspot-details** - Detailed hotspot information
+| Tool | Description |
+|------|-------------|
+| `get-projects` | List projects (supports search query) |
+| `get-project-details` | Get project information |
+| `get-project-branches` | List analyzed branches |
+| `get-issues` | Find bugs, vulnerabilities, code smells |
+| `get-hotspots` | Security hotspots requiring review |
+| `get-hotspot-details` | Detailed hotspot information |
+| `get-metrics` | Code quality metrics |
+| `get-quality-gate-status` | Check if quality gate passed |
+| `get-project-analyses` | Analysis history |
+| `get-source-code` | View source code with line numbers |
+| `get-duplications` | Find code duplication |
+| `get-rule-details` | Explain violated rules |
 
-### Quality & Metrics (3)
-7. **get-metrics** - Code quality metrics
-8. **get-quality-gate-status** - Check if quality gate passed
-9. **get-project-analyses** - Analysis history
+### Web API Tools (3) — full SonarQube API access
 
-### Code Inspection (3)
-10. **get-source-code** - View source code with line numbers
-11. **get-duplications** - Find code duplication
-12. **get-rule-details** - Explain violated rules
+These tools use SonarQube's built-in `/api/webservices` discovery to expose **every endpoint** available on your instance (issues, projects, quality gates, webhooks, permissions, etc.).
+
+| Tool | Description |
+|------|-------------|
+| `search-api-endpoints` | Discover available API endpoints by keyword |
+| `describe-api-endpoint` | Get parameters and HTTP method for an endpoint |
+| `call-sonar-api` | Execute any API call (GET/POST) |
+
+**Recommended workflow:**
+
+```
+1. search-api-endpoints  →  find "issues search"
+2. describe-api-endpoint →  learn required params (projectKey, severities, ...)
+3. call-sonar-api        →  execute the call
+```
+
+**Example — search issues via generic API:**
+
+```json
+{
+  "controller": "api/issues",
+  "action": "search",
+  "params": {
+    "projects": "my-project-key",
+    "severities": "CRITICAL,BLOCKER",
+    "ps": 50
+  }
+}
+```
+
+**Example — assign issue (requires `SONARQUBE_READ_ONLY=false`):**
+
+```json
+{
+  "controller": "api/issues",
+  "action": "assign",
+  "method": "POST",
+  "params": {
+    "issue": "AU-Tpxb--iU5OvuD2FLy",
+    "assignee": "john.doe"
+  }
+}
+```
+
+### Read-only Mode Behavior
+
+When `SONARQUBE_READ_ONLY=true`:
+
+- All 12 analysis tools work normally (they are always read-only)
+- `search-api-endpoints` and `describe-api-endpoint` work normally
+- `call-sonar-api` **blocks** POST and mutation GET endpoints (create, update, delete, assign, etc.)
+
+When `SONARQUBE_READ_ONLY=false` (default):
+
+- Full API access including write operations
 
 ## AI Prompts
 
-### 1. analyze-project-quality
-Complete project analysis with insights and recommendations.
-
-```
-"Analyze project quality for 'my-repo'"
-```
-
-### 2. generate-quality-report
-Generate detailed quality report.
-
-```
-"Generate quality report for project 'backend-api'"
-```
-
-### 3. prioritize-issues
-Prioritize issues by severity and impact.
-
-```
-"Prioritize issues for project 'frontend'"
-```
+| Prompt | Description |
+|--------|-------------|
+| `analyze-project-quality` | Complete project analysis with insights |
+| `generate-quality-report` | Detailed quality report |
+| `prioritize-issues` | Prioritize issues by severity and impact |
 
 ## Usage Examples
 
-### Basic Analysis
+### Code Quality Analysis
+
 ```
 "Show critical bugs in project 'my-app'"
 "What's the code coverage of 'backend-service'?"
 "Did project 'frontend' pass the quality gate?"
 ```
 
-### Branch Analysis
+### Explore SonarQube API
+
 ```
-"Analyze issues in branch feature/new-feature"
-"Compare quality between develop and main branches"
+"List all SonarQube API endpoints related to quality gates"
+"Show parameters for api/issues/search"
+"Call api/projects/search with query=my-repo"
 ```
 
 ### Security Review
+
 ```
 "Show unreviewed security hotspots"
 "Explain hotspot ABC-123 in detail"
-"Security vulnerabilities in new code"
-```
-
-### Code Review
-```
-"Show code where bug is on line 45"
-"Find code duplications in UserService.java"
-"Explain why rule java:S1144 was violated"
-```
-
-### Refactoring
-```
-"Which files have most code duplication?"
-"Show refactoring opportunities"
-"Identify code smells to clean up"
 ```
 
 ## Development
@@ -215,94 +228,30 @@ Prioritize issues by severity and impact.
 npm run dev
 ```
 
-This opens the MCP Inspector for interactive testing.
-
 ### Project Structure
 
 ```
 @godrix/mcp-sonarqube/
 ├── src/
-│   ├── server.ts                          # Main server
+│   ├── server.ts                              # Main server
+│   ├── config/
+│   │   └── SonarQubeConfig.ts                 # Environment config
 │   ├── services/
-│   │   └── SonarQubeService.ts            # API integration
+│   │   └── SonarQubeService.ts                # API integration
 │   ├── controllers/
 │   │   ├── tools/
-│   │   │   └── SonarQubeToolsController.ts  # MCP tools
+│   │   │   ├── SonarQubeToolsController.ts    # Analysis tools
+│   │   │   └── SonarQubeApiToolsController.ts # Generic Web API tools
 │   │   └── prompts/
-│   │       └── SonarQubePromptController.ts # MCP prompts
+│   │       └── SonarQubePromptController.ts   # MCP prompts
 │   └── model/
-│       └── SonarQube.ts                   # TypeScript types
-├── build/                                  # Compiled JavaScript
+│       ├── SonarQube.ts                       # Domain types
+│       └── SonarQubeApi.ts                    # Web API types
+├── build/                                      # Compiled JavaScript
+├── .env.example
 ├── package.json
-├── tsconfig.json
-└── .env                                    # Configuration (not versioned)
+└── tsconfig.json
 ```
-
-## Tool Reference
-
-### get-projects
-List SonarQube projects with optional search.
-
-**Parameters:**
-- `query` (optional) - Search by repository name
-- `page` (optional) - Page number (default: 1)
-- `pageSize` (optional) - Items per page (default: 100)
-
-### get-issues
-Search for code issues.
-
-**Parameters:**
-- `projectKey` (required) - Project identifier
-- `branch` (optional) - Specific branch
-- `severities` (optional) - Filter: BLOCKER, CRITICAL, MAJOR, MINOR, INFO
-- `types` (optional) - Filter: BUG, VULNERABILITY, CODE_SMELL, SECURITY_HOTSPOT
-- `issueStatuses` (optional) - Filter: OPEN, CONFIRMED, FALSE_POSITIVE, ACCEPTED, FIXED
-- `createdAfter` (optional) - Date filter (YYYY-MM-DD)
-- `createdBefore` (optional) - Date filter (YYYY-MM-DD)
-- `assignees` (optional) - Filter by assignee (__me__ for current user)
-- `tags` (optional) - Filter by tags
-
-### get-metrics
-Get code quality metrics.
-
-**Parameters:**
-- `projectKey` (required) - Project identifier
-- `metricKeys` (required) - Array of metric names
-
-**Common metrics:**
-- `coverage` - Test coverage
-- `bugs` - Number of bugs
-- `vulnerabilities` - Number of vulnerabilities
-- `code_smells` - Number of code smells
-- `sqale_rating` - Maintainability rating (A-E)
-- `reliability_rating` - Reliability rating (A-E)
-- `security_rating` - Security rating (A-E)
-- `duplicated_lines_density` - Duplication percentage
-- `ncloc` - Lines of code (non-comment)
-
-### get-hotspots
-Find security hotspots.
-
-**Parameters:**
-- `projectKey` (required) - Project identifier
-- `branch` (optional) - Specific branch
-- `status` (optional) - TO_REVIEW or REVIEWED
-- `resolution` (optional) - FIXED, SAFE, or ACKNOWLEDGED
-- `inNewCodePeriod` (optional) - Filter new code only
-
-### get-source-code
-View source code with line numbers.
-
-**Parameters:**
-- `fileKey` (required) - File identifier (format: `project:path/to/file`)
-- `from` (optional) - Start line
-- `to` (optional) - End line
-
-### get-rule-details
-Get detailed rule information.
-
-**Parameters:**
-- `ruleKey` (required) - Rule identifier (format: `language:ruleId`)
 
 ## Troubleshooting
 
@@ -316,44 +265,29 @@ Get detailed rule information.
 - Use `get-projects` with query to find it
 - Check you have access in SonarQube
 
+### Operation Blocked in Read-only Mode
+- Set `SONARQUBE_READ_ONLY=false` to enable write operations
+- Or use a token with only Browse permission for extra safety
+
 ### Connection Errors
-- Verify SONARQUBE_URL is correct
+- Verify `SONARQUBE_URL` is correct
 - For local server, ensure it's running
 - Check firewall settings
 
 ## Security
 
-- ✅ Read-only operations (no modifications)
-- ✅ Token stored in `.env` (not versioned)
-- ✅ Basic Auth with base64 encoding
-- ⚠️ Never commit `.env` file
-- ⚠️ Use tokens with minimum required permissions
-
-## API Rate Limits
-
-Be aware of API rate limits:
-- **SonarCloud**: Check your organization's limits
-- **SonarQube Server**: Depends on server configuration
+- Read-only mode available via `SONARQUBE_READ_ONLY=true`
+- Token stored in environment (not versioned)
+- Basic Auth with base64 encoding
+- Never commit `.env` file
+- Use tokens with minimum required permissions
 
 ## License
 
 MIT
-
-## Contributing
-
-Contributions welcome! Please ensure:
-- TypeScript strict mode compliance
-- English comments and documentation
-- Tests for new features
-- Update README for new tools
 
 ## Links
 
 - [SonarQube Web API](https://docs.sonarqube.org/latest/extend/web-api/)
 - [SonarCloud](https://sonarcloud.io)
 - [Model Context Protocol](https://github.com/modelcontextprotocol/sdk)
-- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
-
----
-
-Built with ❤️ using Model Context Protocol

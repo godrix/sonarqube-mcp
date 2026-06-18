@@ -1,4 +1,11 @@
 import axios, { AxiosInstance } from "axios";
+import { SonarQubeConfig } from "../config/SonarQubeConfig.js";
+import {
+  SonarQubeApiCallOptions,
+  SonarQubeApiEndpointSummary,
+  SonarQubeWebServiceShowResponse,
+  SonarQubeWebServicesListResponse,
+} from "../model/SonarQubeApi.js";
 import {
   SonarQubeProject,
   ProjectsResponse,
@@ -7,33 +14,218 @@ import {
   SonarQubeQualityGate,
 } from "../model/SonarQube.js";
 
+const MUTATION_KEYWORDS = [
+  "create",
+  "update",
+  "delete",
+  "remove",
+  "add",
+  "set",
+  "assign",
+  "unassign",
+  "bulk",
+  "change",
+  "rename",
+  "restore",
+  "revoke",
+  "generate",
+  "cancel",
+  "dismiss",
+  "enable",
+  "disable",
+  "install",
+  "uninstall",
+  "copy",
+  "move",
+  "associate",
+  "dissociate",
+  "do_transition",
+];
+
 export class SonarQubeService {
   private api: AxiosInstance;
   private baseUrl: string;
+  readonly readOnly: boolean;
 
-  constructor() {
-    this.baseUrl = process.env.SONARQUBE_URL || "https://sonarcloud.io";
-    const token = process.env.SONARQUBE_TOKEN;
+  constructor(private config: SonarQubeConfig) {
+    this.baseUrl = config.url;
+    this.readOnly = config.readOnly;
 
-    if (!token) {
-      throw new Error(
-        "SONARQUBE_TOKEN not configured. Set environment variable."
-      );
-    }
-
-    // Convert token to Basic Auth format
-    // Token: squ_47af748... → squ_47af748...: (add : at the end)
-    // Then encode in base64
-    const tokenWithColon = `${token}:`;
-    const base64Token = Buffer.from(tokenWithColon).toString('base64');
+    const tokenWithColon = `${config.token}:`;
+    const base64Token = Buffer.from(tokenWithColon).toString("base64");
 
     this.api = axios.create({
       baseURL: `${this.baseUrl}/api`,
       headers: {
-        "Authorization": `Basic ${base64Token}`,
+        Authorization: `Basic ${base64Token}`,
         "Content-Type": "application/json",
       },
     });
+  }
+
+  /**
+   * List all web services exposed by the SonarQube instance.
+   */
+  async listWebServices(
+    includeInternals: boolean = false
+  ): Promise<SonarQubeWebServicesListResponse> {
+    try {
+      const response = await this.api.get("/webservices/list", {
+        params: {
+          include_internals: includeInternals,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error, "Error listing web services");
+    }
+  }
+
+  /**
+   * Get details (parameters, method) for a specific API endpoint.
+   */
+  async showWebService(
+    controller: string,
+    action: string
+  ): Promise<SonarQubeWebServiceShowResponse> {
+    try {
+      const response = await this.api.get("/webservices/show", {
+        params: {
+          controller: this.normalizeController(controller),
+          action,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error, "Error describing API endpoint");
+    }
+  }
+
+  /**
+   * Search API endpoints by keyword across controllers and actions.
+   */
+  async searchApiEndpoints(
+    query?: string,
+    includeInternals: boolean = false
+  ): Promise<SonarQubeApiEndpointSummary[]> {
+    const { webServices } = await this.listWebServices(includeInternals);
+    const normalizedQuery = query?.trim().toLowerCase();
+
+    const endpoints = webServices.flatMap((service) =>
+      service.actions.map((endpointAction) => {
+        const method: "GET" | "POST" = endpointAction.post ? "POST" : "GET";
+        const controller = service.path;
+        const endpoint = {
+          controller,
+          action: endpointAction.key,
+          description:
+            endpointAction.description ||
+            service.description ||
+            `${controller}/${endpointAction.key}`,
+          method,
+          readOnly: this.isReadOnlyEndpoint(
+            controller,
+            endpointAction.key,
+            method,
+            endpointAction.post
+          ),
+        };
+
+        return endpoint;
+      })
+    );
+
+    if (!normalizedQuery) {
+      return endpoints;
+    }
+
+    return endpoints.filter((endpoint) => {
+      const haystack = [
+        endpoint.controller,
+        endpoint.action,
+        endpoint.description,
+        endpoint.method,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(normalizedQuery);
+    });
+  }
+
+  /**
+   * Execute any SonarQube Web API endpoint.
+   */
+  async callApi(options: SonarQubeApiCallOptions): Promise<unknown> {
+    const controller = this.normalizeController(options.controller);
+    const action = options.action.trim();
+    const endpointDetails = await this.showWebService(controller, action);
+    const method = options.method ?? (endpointDetails.post ? "POST" : "GET");
+
+    if (this.readOnly && !this.isReadOnlyEndpoint(controller, action, method, endpointDetails.post)) {
+      throw new Error(
+        `Operation ${controller}/${action} (${method}) is blocked in read-only mode. Set SONARQUBE_READ_ONLY=false to enable write operations.`
+      );
+    }
+
+    const path = `/${controller}/${action}`;
+    const params = this.normalizeParams(options.params);
+
+    try {
+      if (method === "POST") {
+        const response = await this.api.post(path, null, { params });
+        return response.data;
+      }
+
+      const response = await this.api.get(path, { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(
+        error,
+        `Error calling ${controller}/${action}`
+      );
+    }
+  }
+
+  private normalizeController(controller: string): string {
+    const trimmed = controller.trim().replace(/^\/+/, "");
+    return trimmed.startsWith("api/") ? trimmed : `api/${trimmed}`;
+  }
+
+  private normalizeParams(
+    params?: Record<string, string | number | boolean | undefined>
+  ): Record<string, string | number | boolean> | undefined {
+    if (!params) {
+      return undefined;
+    }
+
+    const normalized: Record<string, string | number | boolean> = {};
+
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null && value !== "") {
+        normalized[key] = value;
+      }
+    }
+
+    return Object.keys(normalized).length > 0 ? normalized : undefined;
+  }
+
+  private isReadOnlyEndpoint(
+    controller: string,
+    action: string,
+    method: "GET" | "POST",
+    postFlag?: boolean
+  ): boolean {
+    if (method === "GET" && !postFlag) {
+      const actionLower = action.toLowerCase();
+      return !MUTATION_KEYWORDS.some((keyword) =>
+        actionLower.includes(keyword)
+      );
+    }
+
+    return false;
   }
 
   /**
