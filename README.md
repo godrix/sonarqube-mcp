@@ -24,21 +24,31 @@ A Model Context Protocol (MCP) server for SonarQube integration. Enables AI assi
 
 ## Quick Start
 
-### 1. Install Dependencies
+### 1. Configure via npx (recommended)
 
-```bash
-npm install
+Add to Cursor, Claude Desktop, or any MCP client — **no clone or build required**:
+
+```json
+{
+  "mcpServers": {
+    "sonarqube": {
+      "command": "npx",
+      "args": ["-y", "@godrix/mcp-sonarqube"],
+      "env": {
+        "SONARQUBE_URL": "https://sonarcloud.io",
+        "SONARQUBE_TOKEN": "your_token_here",
+        "SONARQUBE_READ_ONLY": "false"
+      }
+    }
+  }
+}
 ```
 
-### 2. Configure Environment
+Restart your MCP client after saving.
 
-Create `.env` file (see `.env.example`):
+Or use the one-click **Install MCP Server** button at the top of this README.
 
-```env
-SONARQUBE_URL=https://sonarcloud.io
-SONARQUBE_TOKEN=your_token_here
-SONARQUBE_READ_ONLY=false
-```
+### 2. Environment variables
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
@@ -50,24 +60,26 @@ SONARQUBE_READ_ONLY=false
 - **SonarCloud**: https://sonarcloud.io → Account → Security → Generate Tokens
 - **SonarQube Server**: Administration → Security → Users → Generate Token
 
-### 3. Build
+### 3. Local development (optional)
+
+Skip if you use **npx** — the published npm package includes pre-built JavaScript.
 
 ```bash
+git clone https://github.com/godrix/sonarqube-mcp.git
+cd sonarqube-mcp
+npm install
+cp .env.example .env   # fill SONARQUBE_TOKEN
 npm run build
 ```
 
-### 4. Configure MCP Client
-
-Add to your MCP client configuration (e.g., Claude Desktop or Cursor):
-
-**macOS/Linux** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+Point your MCP client at the clone:
 
 ```json
 {
   "mcpServers": {
     "sonarqube": {
       "command": "node",
-      "args": ["/absolute/path/build/server.js"],
+      "args": ["/absolute/path/to/mcp-sonarqube/build/server.js"],
       "env": {
         "SONARQUBE_URL": "https://sonarcloud.io",
         "SONARQUBE_TOKEN": "your_token_here",
@@ -77,6 +89,16 @@ Add to your MCP client configuration (e.g., Claude Desktop or Cursor):
   }
 }
 ```
+
+**Global install alternative:**
+
+```bash
+npm install -g @godrix/mcp-sonarqube
+```
+
+Then use `"command": "mcp-sonarqube"` in `mcp.json`.
+
+**Claude Desktop config path** — macOS/Linux: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
 **Read-only example** (safe for exploration, no mutations):
 
@@ -90,7 +112,7 @@ Add to your MCP client configuration (e.g., Claude Desktop or Cursor):
 }
 ```
 
-### 5. Restart MCP Client
+### 4. Restart MCP Client
 
 Restart your MCP client to load the server.
 

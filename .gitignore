@@ -3,6 +3,7 @@ build/
 .env
 .DS_Store
 *.log
+*.mcpb
 .vscode/
 .idea/
 .cursor/

@@ -1,0 +1,9 @@
+.git
+src/
+test/
+*.ts
+tsconfig.json
+.env
+.env.*
+.github/
+.cursor/
