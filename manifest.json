@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.3",
   "name": "@godrix/mcp-sonarqube",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "MCP Server for SonarQube integration: code quality analysis, issues, hotspots, and Web API access.",
   "author": {
     "name": "Godrix"
@@ -11,7 +11,9 @@
     "entry_point": "build/server.js",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/build/server.js"],
+      "args": [
+        "${__dirname}/build/server.js"
+      ],
       "env": {
         "SONARQUBE_URL": "${user_config.sonarqube_url}",
         "SONARQUBE_TOKEN": "${user_config.sonarqube_token}",
@@ -45,7 +47,11 @@
   "tools_generated": true,
   "license": "MIT",
   "compatibility": {
-    "platforms": ["darwin", "win32", "linux"],
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
     "runtimes": {
       "node": ">=18.0.0"
     }
