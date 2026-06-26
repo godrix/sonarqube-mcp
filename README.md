@@ -1,6 +1,6 @@
 # SonarQube MCP Server
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=Sonarqube&config=eyJlbnYiOnsiU09OQVJRVUJFX1VSTCI6Imh0dHBzOi8vc29uYXJjbG91ZC5pbyIsIlNPTkFSUVVCRV9UT0tFTiI6InlvdXJfdG9rZW5faGVyZSIsIlNPTkFSUVVCRV9SRUFEX09OTFkiOiJmYWxzZSJ9LCJjb21tYW5kIjoibnB4IC15IEBnb2RyaXgvbWNwLXNvbmFycXViZSJ9)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=Sonarqube&config=eyJlbnYiOnsiU09OQVJRVUJFX1VSTCI6Imh0dHBzOi8vc29uYXJjbG91ZC5pbyIsIlNPTkFSUVVCRV9UT0tFTiI6InlvdXJfdG9rZW5faGVyZSIsIlNPTkFSUVVCRV9SRUFEX09OTFkiOiJmYWxzZSJ9LCJjb21tYW5kIjoibnB4IC15IEBnb2RyaXgvc29uYXJxdWJlLW1jcCJ9)
 
 A Model Context Protocol (MCP) server for SonarQube integration. Enables AI assistants to analyze code quality, explore the full SonarQube Web API, and interact with metrics, issues, hotspots, and more.
 
@@ -33,7 +33,7 @@ Add to Cursor, Claude Desktop, or any MCP client — **no clone or build require
   "mcpServers": {
     "sonarqube": {
       "command": "npx",
-      "args": ["-y", "@godrix/mcp-sonarqube"],
+      "args": ["-y", "@godrix/sonarqube-mcp"],
       "env": {
         "SONARQUBE_URL": "https://sonarcloud.io",
         "SONARQUBE_TOKEN": "your_token_here",
@@ -93,10 +93,10 @@ Point your MCP client at the clone:
 **Global install alternative:**
 
 ```bash
-npm install -g @godrix/mcp-sonarqube
+npm install -g @godrix/sonarqube-mcp
 ```
 
-Then use `"command": "mcp-sonarqube"` in `mcp.json`.
+Then use `"command": "sonarqube-mcp"` in `mcp.json`.
 
 **Claude Desktop config path** — macOS/Linux: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
@@ -253,7 +253,7 @@ npm run dev
 ### Project Structure
 
 ```
-@godrix/mcp-sonarqube/
+@godrix/sonarqube-mcp/
 ├── src/
 │   ├── server.ts                              # Main server
 │   ├── config/

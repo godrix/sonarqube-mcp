@@ -1,18 +1,18 @@
 {
-  "name": "@godrix/mcp-sonarqube",
+  "name": "@godrix/sonarqube-mcp",
   "version": "1.1.2",
   "description": "MCP Server for seamless SonarQube integration. Enables AI-driven code quality analysis and interaction with SonarQube metrics and insights.",
   "type": "module",
   "main": "build/server.js",
   "bin": {
-    "mcp-sonarqube": "build/server.js"
+    "sonarqube-mcp": "build/server.js"
   },
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
     "dev": "npm run build && export DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector node /build/server.js",
     "start": "node build/server.js",
-    "dev:mcp": "npm run build && DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector --config .cursor/inspector.json --server mcp-sonarqube",
+    "dev:mcp": "npm run build && DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector --config .cursor/inspector.json --server sonarqube-mcp",
     "pack:mcpb": "npm run build && npx --yes @anthropic-ai/mcpb pack",
     "pack:mcpb:slim": "npm run build && rm -rf node_modules && npm ci --omit=dev --ignore-scripts && npx --yes @anthropic-ai/mcpb pack"
   },

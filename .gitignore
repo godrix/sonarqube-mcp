@@ -8,3 +8,4 @@ build/
 .idea/
 .cursor/
 !.cursor/inspector.json
+.cursortoys
